@@ -9,6 +9,9 @@ public class VehicleController : MonoBehaviour
     public float brakesDeccel = 9f;
 
     public float turnAcceleration = 2f;
+    public float turnAccelerationLow = 0.01f;
+    public float turnAccelerationHigh = 10f;
+
     public float turnDampening = 0.9f;
 
     public bool DRAW_DEBUG;
@@ -30,7 +33,7 @@ public class VehicleController : MonoBehaviour
         _rigidbody = GetComponent<Rigidbody>();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         // ALL GAS, NO BRAKES
         _rigidbody.AddRelativeForce(Vector3.forward * acceleration, ForceMode.Force);
@@ -38,6 +41,8 @@ public class VehicleController : MonoBehaviour
 
         float currVelMag = _rigidbody.velocity.magnitude;
 
+
+        float MIN_SPEED = MAX_SPEED * 0.5f;
 
         float currTurnAccel = turnAcceleration;
         float currTurnDamp = turnDampening;
@@ -47,7 +52,7 @@ public class VehicleController : MonoBehaviour
         {
             // the closer we are to max speed, the more effective braking is,
             // but by the time we are slower, we are barely braking
-            float brakes = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, 0f, brakesDeccel, Easing.SmoothStop3);
+            float brakes = Easing.RangeMap(currVelMag, MIN_SPEED, MAX_SPEED, 0f, brakesDeccel, Easing.SmoothStop3);
 
             accel = Vector3.back * brakes;
 
@@ -56,11 +61,11 @@ public class VehicleController : MonoBehaviour
 
             // as soon as start braking, turn speed improves
             // turn speed gets ludicrous the slower we are
-            currTurnAccel = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, turnAcceleration * 100f, turnAcceleration * 2f, Easing.SmoothStop3);
+            currTurnAccel = Easing.RangeMap(currVelMag, MIN_SPEED, MAX_SPEED, turnAcceleration * turnAccelerationLow, turnAcceleration * turnAccelerationHigh, Easing.SmoothStop3);
 
             // slower we're going while braking, the closer turn decay is to 1f, 
             // meaning no decay/damp
-            currTurnDamp = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, 0.98f, currTurnDamp, Easing.SmoothStart3);
+            currTurnDamp = Easing.RangeMap(currVelMag, MIN_SPEED, MAX_SPEED, 0.5f, currTurnDamp, Easing.SmoothStart3);
         }
 
         // stop spinning from collisions - could also make nonlinear thing
