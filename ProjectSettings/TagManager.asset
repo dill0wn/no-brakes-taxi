@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Passenger
+  - Death
   layers:
   - Default
   - TransparentFX
