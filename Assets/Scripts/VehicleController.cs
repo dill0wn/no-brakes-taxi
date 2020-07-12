@@ -11,6 +11,8 @@ public class VehicleController : MonoBehaviour
     public float turnAcceleration = 2f;
     public float turnDampening = 0.9f;
 
+    public bool DRAW_DEBUG;
+
     private Rigidbody _rigidbody;
     private float _turnVel = 0f;
 
@@ -21,6 +23,7 @@ public class VehicleController : MonoBehaviour
     private Vector3 _velocity;
     private Vector3 _acceleration;
     private Vector3 _heading;
+
 
     void Start()
     {
@@ -110,6 +113,7 @@ public class VehicleController : MonoBehaviour
 
     private void DrawAccel(Vector3 accel)
     {
+        if (!DRAW_DEBUG) { return; }
         if (accel.sqrMagnitude > 0.001f)
         {
             Debug.DrawRay(transform.position, transform.position + accel, Color.red, 0f, false);
@@ -118,6 +122,7 @@ public class VehicleController : MonoBehaviour
 
     private void DrawVelocity(Vector3 velocity)
     {
+        if (!DRAW_DEBUG) { return; }
         if (velocity.sqrMagnitude > 0.001f)
         {
             Debug.DrawRay(transform.position, transform.position + velocity, Color.blue, 0f, false);
@@ -126,6 +131,7 @@ public class VehicleController : MonoBehaviour
 
     private void DrawForward(Vector3 forward)
     {
+        if (!DRAW_DEBUG) { return; }
         if (forward.sqrMagnitude > 0.001f)
         {
             Debug.DrawRay(transform.position, transform.position + forward, Color.green, 0f, false);

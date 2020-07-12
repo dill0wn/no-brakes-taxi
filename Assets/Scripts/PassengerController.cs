@@ -4,20 +4,39 @@ using UnityEngine;
 
 public class PassengerController : MonoBehaviour
 {
-    private GameObject _passenger;
+    public BoxCollider destinationArea;
+    public GameObject destinationPrefab;
+    public int passengersDelivered;
 
-    void OnCollisionEnter(Collision collision)
+    private GameObject _currentDestination = null;
+
+    void Start()
     {
-        if (_passenger != null)
+        passengersDelivered = 0;
+    }
+
+    public void GenerateNewDestination()
+    {
+        if (_currentDestination != null)
         {
             return;
         }
 
-        if (collision.gameObject.tag == "Passenger")
-        {
-            _passenger = collision.gameObject;
-            _passenger.SetActive(false);
-            Debug.LogFormat("Picked up {0}", _passenger);
-        }
+        _currentDestination = Instantiate(destinationPrefab);
+
+        var areaSize = destinationArea.size;
+        Vector3 location = new Vector3(
+            Random.Range(-areaSize.x * 0.5f, areaSize.x * 0.5f),
+            0.1f,
+            Random.Range(-areaSize.z * 0.5f, areaSize.z * 0.5f)
+        );
+        _currentDestination.transform.position = location;
+    }
+
+
+    public void DestinationReached()
+    {
+        passengersDelivered++;
+        Destroy(_currentDestination);
     }
 }

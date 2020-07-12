@@ -19,7 +19,7 @@ TextureImporter:
     second: score
   - first:
       213: 6368659910153072629
-    second: keys+0
+    second: keys_0
   - first:
       213: 3747852382259853561
     second: keys_1
@@ -249,7 +249,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: keys+0
+      name: keys_0
       rect:
         serializedVersion: 2
         x: 146
