@@ -1,10 +1,12 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class VehicleController : MonoBehaviour
 {
     public float MAX_SPEED = 10f;
     public float acceleration = 10f;
+    public float brakesDeccel = 9f;
 
     public float turnAcceleration = 2f;
     public float turnDampening = 0.9f;
@@ -14,6 +16,12 @@ public class VehicleController : MonoBehaviour
 
     private Vector3 _direction;
 
+
+    private Vector3 _momentum;
+    private Vector3 _velocity;
+    private Vector3 _acceleration;
+    private Vector3 _heading;
+
     void Start()
     {
         _rigidbody = GetComponent<Rigidbody>();
@@ -21,19 +29,41 @@ public class VehicleController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.UpArrow))
-        {
-            var force = Vector3.forward * acceleration;
-            _rigidbody.AddRelativeForce(force, ForceMode.Force);
-        }
+        // ALL GAS, NO BRAKES
+        _rigidbody.AddRelativeForce(Vector3.forward * acceleration, ForceMode.Force);
 
+
+        float currVelMag = _rigidbody.velocity.magnitude;
+
+
+        float currTurnAccel = turnAcceleration;
+        float currTurnDamp = turnDampening;
+        // OK, BRAKES I GUESS. BUT STILL ALL GAS
+        Vector3 accel = Vector3.zero;
         if (Input.GetKey(KeyCode.DownArrow))
         {
-            var force = Vector3.back * acceleration;
-            _rigidbody.AddRelativeForce(force, ForceMode.Force);
+            // the closer we are to max speed, the more effective braking is,
+            // but by the time we are slower, we are barely braking
+            float brakes = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, 0f, brakesDeccel, Easing.SmoothStop3);
+
+            accel = Vector3.back * brakes;
+
+            _rigidbody.AddRelativeForce(accel, ForceMode.Force);
+            DrawAccel(transform.TransformVector(accel));
+
+            // as soon as start braking, turn speed improves
+            // turn speed gets ludicrous the slower we are
+            currTurnAccel = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, turnAcceleration * 100f, turnAcceleration * 2f, Easing.SmoothStop3);
+
+            // slower we're going while braking, the closer turn decay is to 1f, 
+            // meaning no decay/damp
+            currTurnDamp = Easing.RangeMap(currVelMag, 0f, MAX_SPEED, 0.98f, currTurnDamp, Easing.SmoothStart3);
         }
 
+        // stop spinning from collisions - could also make nonlinear thing
+        _rigidbody.angularVelocity *= 0.9f;
 
+        // 
         float turnDir = 0f;
         if (Input.GetKey(KeyCode.LeftArrow))
         {
@@ -44,12 +74,18 @@ public class VehicleController : MonoBehaviour
             turnDir += 1f;
         }
 
-        _turnVel += turnDir * turnAcceleration * Time.deltaTime;
-        _turnVel *= turnDampening;
+        _turnVel += turnDir * currTurnAccel * Time.deltaTime;
+        // if(!Input.GetKey(KeyCode.RightArrow) && ! Input.GetKey(KeyCode.LeftArrow))
+        {
+            _turnVel *= currTurnDamp;
+        }
 
         var nextVelocity = _rigidbody.velocity;
         var turnRot = Quaternion.AngleAxis(_turnVel, Vector3.up);
         nextVelocity = turnRot * nextVelocity;
+
+        _rigidbody.rotation *= turnRot;
+
 
         if (nextVelocity.sqrMagnitude > MAX_SPEED * MAX_SPEED)
         {
@@ -64,7 +100,35 @@ public class VehicleController : MonoBehaviour
         // nextVelocity *= t;
 
         _rigidbody.velocity = nextVelocity;
+        DrawVelocity(_rigidbody.velocity);
+        // DrawForward(transform.forward);
+        DrawForward(_rigidbody.rotation * Vector3.forward);
+
 
         // transform.forward = _rigidbody.velocity;
+    }
+
+    private void DrawAccel(Vector3 accel)
+    {
+        if (accel.sqrMagnitude > 0.001f)
+        {
+            Debug.DrawRay(transform.position, transform.position + accel, Color.red, 0f, false);
+        }
+    }
+
+    private void DrawVelocity(Vector3 velocity)
+    {
+        if (velocity.sqrMagnitude > 0.001f)
+        {
+            Debug.DrawRay(transform.position, transform.position + velocity, Color.blue, 0f, false);
+        }
+    }
+
+    private void DrawForward(Vector3 forward)
+    {
+        if (forward.sqrMagnitude > 0.001f)
+        {
+            Debug.DrawRay(transform.position, transform.position + forward, Color.green, 0f, false);
+        }
     }
 }
