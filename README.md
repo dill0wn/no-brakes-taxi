@@ -4,8 +4,19 @@ A game where you can't stop, and all you can do is turn, and you gotta pick up t
 
 ## TODO
 - [ ] turning
-- [ ] textures for floor to get scale
-- [ ] prevent going through things
+- [x] textures for floor to get scale
+- [x] prevent going through things
+- [ ] auto-forwarding
+- [ ] passengers
+- [ ] passenger pickup
+- [ ] passenger randomly appearing
+- [ ] destinations
+- [ ] destination drop off
+- [ ] destination randomly appearing
+
+- [ ] UI?
+- [ ] Title
+
 
 
 ## Credits
