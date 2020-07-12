@@ -65,6 +65,6 @@ public class VehicleController : MonoBehaviour
 
         _rigidbody.velocity = nextVelocity;
 
-        transform.forward = _rigidbody.velocity;
+        // transform.forward = _rigidbody.velocity;
     }
 }
